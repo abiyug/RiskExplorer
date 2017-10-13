@@ -1,0 +1,60 @@
+---
+title: "Virtual Risk Explorer"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation    : rows
+    vertical_layout: fill
+    theme          : lumen 
+    social         : [ "twitter", href: "@abiyugiday", "facebook", "menu" ]#[ "twitter", "facebook", "menu" ]
+    navbar         :
+               - { title: "About me", href: "http://abiyug.github.io/aboutme", align: right}
+---
+
+```{r setup, include=FALSE}
+# Load Library
+library(flexdashboard)
+library(crosstalk)
+library(ggplot2)
+library(leaflet)
+library(leaflet.extras)
+
+#Import curated data
+df_1k <- read.csv("/Users/abiyugiday/Documents/newProjects/hackathonDC/data/df_1k_xtalk.csv", stringsAsFactors = FALSE)
+
+# make df xtalk ready - sharable
+sd1 <- SharedData$new(df_1k)
+
+#sd1_3 <- SharedData$new(df_1k[df_1k$risk_category == 3,], group = "Risk Cat 3")
+#sd1_4 <- SharedData$new(df_1k[df_1k$risk_category == 4,], group = "Risk Cat 4")
+#sd1_5 <- SharedData$new(df_1k[df_1k$risk_category == 5,], group = "Risk Cat 5")
+```
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+**Explore risk Notes**
+<br>
+<br>
+```{r}
+filter_checkbox("Years", "Years_descriptor", sd1, ~year.y)
+filter_checkbox("region", "Region", sd1, ~region)
+filter_checkbox("risk", "cat 3-5", sd1, ~risk_category)
+```
+
+Column {data-width = 950}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+ leaflet(sd1) %>% #enableTileCaching() %>% 
+               addProviderTiles("CartoDB.DarkMatter")  %>% 
+               setView(lng = -77.03687, lat = 38.90719, zoom = 12) %>%  
+               addResetMapButton() %>%   # not in the CRAN version
+               addCircleMarkers(~long, ~lat, popup = ~popInfo, radius = 2, color = "skyblue")#%>%
+               #addCircles(~long, ~lat, popup = ~popInfo, radius = .1, stroke = TRUE, color = "orange", fill = TRUE, data = (df_1k %>% filter(risk_category == 4)), group = "Risk Cat 4") %>%
+               #addCircles(~long, ~lat, popup = ~popInfo, radius = .1, color = "red",    fill = TRUE, data = (df_1k %>% filter(risk_category == 5)), group = "Risk Cat 5" ) %>%
+               #addLayersControl( baseGroups = c("Risk Cat 3", "Risk Cat 4", "Risk Cat 5"),
+               #                  overlayGroups = c("Risk Cat 3", "Risk Cat 4", "Risk Cat 5"),
+               #                  options = layersControlOptions(collapsed = FALSE)) 
+```
